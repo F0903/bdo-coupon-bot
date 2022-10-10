@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Coroutine
+from typing import Coroutine
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -25,7 +25,7 @@ class MainCog(commands.Cog):
         await interaction.response.defer()
         # TODO: check access to channel before adding
         with ScannerDb() as db:
-            db.channels().add(interaction.guild_id, channel.id)
+            db.channels.add(interaction.guild_id, channel.id)
         await interaction.followup.send(content=f"{channel.name} is now subscribed!")
 
     @app_commands.command(
@@ -38,7 +38,7 @@ class MainCog(commands.Cog):
     ):
         await interaction.response.defer()
         with ScannerDb() as db:
-            db.channels().remove(interaction.guild.id)
+            db.channels.remove(interaction.guild.id)
         await interaction.followup.send(
             content=f"{interaction.guild.name} is now unsubscribed."
         )
@@ -63,11 +63,14 @@ class DiscordBot(commands.Bot):
 
     async def send_message_to_subs(self, message: str):
         with ScannerDb() as db:
-            channels = db.channels().get_all()
-        for id in channels:
-            # TODO: if missing access remove from db
-            ch = await self.fetch_channel(id)
-            await ch.send(message)
+            channels = db.channels.get_all()
+            for elem in channels:
+                try:
+                    ch = await self.fetch_channel(elem.channelID)
+                    await ch.send(message)
+                except (PermissionError, discord.errors.Forbidden):
+                    # TODO: Log
+                    db.channels.remove(elem.guildID)
 
 
 class BotManager:

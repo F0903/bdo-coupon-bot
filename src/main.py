@@ -1,7 +1,6 @@
 import asyncio as asyn
 from datetime import datetime, timedelta
 from pathlib import Path
-from db import ScannerDb
 from discord_bot import DiscordBot, BotManager
 
 

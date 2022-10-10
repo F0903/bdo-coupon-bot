@@ -1,50 +1,12 @@
 from datetime import date
-from distutils.util import change_root
 import sqlite3 as sql
 from typing import Iterable
-
-
-class ChannelsTable:
-    def __init__(self, cursor: sql.Cursor):
-        self.cursor = cursor
-        self.ensure_table()
-
-    def ensure_table(self):
-        self.cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS channels(
-                guildID BIGINT PRIMARY KEY UNIQUE,
-                channelID BIGINT UNIQUE
-            )
-            """
-        )
-
-    def add(self, guildID: int, channelID: int):
-        self.cursor.execute(
-            "INSERT OR REPLACE INTO channels VALUES (?, ?)", [guildID, channelID]
-        )
-
-    def remove(self, guildID: int):
-        self.cursor.execute("DELETE FROM channels WHERE guildID=?", [guildID])
-
-    def get(self, guildID: int) -> int:
-        channel = self.cursor.execute(
-            "SELECT channelID FROM channels WHERE guildID=?", [guildID]
-        ).fetchone()[0]
-        return channel
-
-    def get_all(self) -> Iterable[int]:
-        channels = map(
-            lambda x: x[0],
-            self.cursor.execute("SELECT channelID from channels").fetchall(),
-        )
-        return channels
 
 
 class CouponCode:
     def __init__(self, hash: int, code: str, date: date):
         self.hash = hash
-        self.code = (code,)
+        self.code = code
         self.date = date
 
 
@@ -57,8 +19,8 @@ class CouponCodesTable:
         self.cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS coupon_codes(
-                hash BIGINT PRIMARY KEY UNIQUE
-                code VARCHAR(18) UNIQUE
+                hash BIGINT PRIMARY KEY UNIQUE,
+                code VARCHAR(18) UNIQUE,
                 date DATE
             )
             """
@@ -84,9 +46,56 @@ class CouponCodesTable:
         return channels
 
 
+class ChannelElement:
+    def __init__(self, guildID: int, channelID: int):
+        self.guildID = guildID
+        self.channelID = channelID
+
+
+class ChannelsTable:
+    def __init__(self, cursor: sql.Cursor):
+        self.cursor = cursor
+        self.ensure_table()
+
+    def ensure_table(self):
+        self.cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS channels(
+                guildID BIGINT PRIMARY KEY UNIQUE,
+                channelID BIGINT UNIQUE
+            )
+            """
+        )
+
+    def add(self, elem: ChannelElement):
+        self.cursor.execute(
+            "INSERT OR REPLACE INTO channels VALUES (?, ?)",
+            [elem.guildID, elem.channelID],
+        )
+
+    def remove(self, guildID: int):
+        self.cursor.execute("DELETE FROM channels WHERE guildID=?", [guildID])
+
+    def get(self, guildID: int) -> int:
+        channel = self.cursor.execute(
+            "SELECT channelID FROM channels WHERE guildID=?", [guildID]
+        ).fetchone()[0]
+        return channel
+
+    def get_all(self) -> Iterable[ChannelElement]:
+        channels = map(
+            lambda x: ChannelElement(x[0], x[1]),
+            self.cursor.execute("SELECT * from channels").fetchall(),
+        )
+        return channels
+
+
 class ScannerDb:
     def __enter__(self):
         self.connect()
+        cursor = self.db.cursor()
+        self._channels = ChannelsTable(cursor)
+        self._coupons = CouponCodesTable(cursor)
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
@@ -94,14 +103,15 @@ class ScannerDb:
 
     def connect(self):
         self.db = sql.connect("../scanner.db")
-        self.db.commit()
 
     def close(self):
         self.db.commit()
         self.db.close()
 
+    @property
     def channels(self) -> ChannelsTable:
-        return ChannelsTable(self.db.cursor())
+        return self._channels
 
+    @property
     def coupons(self) -> CouponCodesTable:
-        return CouponCodesTable(self.db.cursor())
+        return self._coupons
