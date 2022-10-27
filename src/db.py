@@ -90,6 +90,7 @@ class ChannelsTable:
         return channels
 
 
+# TODO: VERY IMPORTANT: Prevent SQL injection
 class ScannerDb:
     def __enter__(self):
         self.connect()
