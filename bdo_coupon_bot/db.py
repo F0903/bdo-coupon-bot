@@ -1,11 +1,10 @@
 from datetime import date
 import sqlite3 as sql
-from typing import Iterable
+from typing import Iterable, Optional
 
 
 class CouponCode:
-    def __init__(self, hash: int, code: str, date: date):
-        self.hash = hash
+    def __init__(self, code: str, date: Optional[date]):
         self.code = code
         self.date = date
 
@@ -19,28 +18,21 @@ class CouponCodesTable:
         self.cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS coupon_codes(
-                hash BIGINT PRIMARY KEY UNIQUE,
-                code VARCHAR(18) UNIQUE,
+                code VARCHAR(18) PRIMARY KEY UNIQUE,
                 date DATE
             )
             """
         )
 
-    def add(self, hash: int, code: str, date: date):
+    def add(self, coupon: CouponCode):
         self.cursor.execute(
-            "INSERT OR REPLACE INTO coupon_codes VALUES (?, ?, ?)", [hash, code, date]
+            "INSERT OR REPLACE INTO coupon_codes VALUES (?, ?)",
+            [coupon.code, coupon.date],
         )
-
-    def get(self, hash: int) -> CouponCode:
-        code_info = self.cursor.execute(
-            "SELECT * FROM coupon_codes WHERE hash=?", [hash]
-        ).fetchone()
-        code = CouponCode(hash, code_info[1], code_info[2])
-        return code
 
     def get_all(self) -> Iterable[CouponCode]:
         channels = map(
-            lambda x: CouponCode(x[0], x[1], x[2]),
+            lambda x: CouponCode(x[0], x[1]),
             self.cursor.execute("SELECT * from coupon_codes").fetchall(),
         )
         return channels
@@ -90,7 +82,6 @@ class ChannelsTable:
         return channels
 
 
-# TODO: VERY IMPORTANT: Prevent SQL injection
 class ScannerDb:
     def __enter__(self):
         self.connect()
