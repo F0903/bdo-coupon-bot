@@ -88,12 +88,17 @@ class ChannelCommands(commands.Cog):
         self,
         interaction: discord.Interaction,
     ):
-        await interaction.response.defer()
-        embed = await self.check_for_new_coupons()
-        if embed is None:
-            await self.send_message_to_subs("Found no new codes :(")
-            return
-        await self.send_message_to_subs(embed=embed)
+        await interaction.response.defer(ephemeral=True)
+        try:
+            embed = await self.check_for_new_coupons()
+            if embed is None:
+                await self.send_message_to_subs("Found no new codes :(")
+                return
+            await self.send_message_to_subs(embed=embed)
+        finally:
+            interaction.response.send_message(
+                "Successfully executed command.", ephemeral=True
+            )
 
     @tasks.loop(hours=24)
     async def run_check_for_new_coupons(self):
