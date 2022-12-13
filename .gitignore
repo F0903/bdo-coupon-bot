@@ -1,6 +1,7 @@
 __pycache__
 discord_token
 scanner.db
+requirements.txt
 
 env
 dist

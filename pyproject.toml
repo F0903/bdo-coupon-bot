@@ -10,10 +10,6 @@ requires-python = ">=3.7"
 license = "MIT"
 keywords = []
 authors = [{ name = "Frederik P.", email = "frepbh@gmail.com" }]
-dependencies = [
-  "discord",
-  "bdo_coupon_scanner@git+https://github.com/F0903/bdo-coupon-scanner.git",
-]
 dynamic = ["version"]
 
 [tool.hatch.version]
@@ -24,6 +20,7 @@ include = ["bdo_coupon_bot/**/*.py", "launch.sh", "discord_token"]
 
 [tool.hatch.build.force-include]
 "./discord_token" = "discord_token"
+"./requirements.txt" = "requirements.txt"
 
 [tool.hatch.metadata]
 allow-direct-references = true
