@@ -96,7 +96,9 @@ class ChannelCommands(commands.Cog):
                 return
             await self.send_message_to_subs(embed=embed)
         finally:
-            interaction.edit_original_response(content="Successfully executed scan.")
+            await interaction.edit_original_response(
+                content="Successfully executed scan."
+            )
 
     @tasks.loop(hours=24)
     async def run_check_for_new_coupons(self):
