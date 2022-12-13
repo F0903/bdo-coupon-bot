@@ -94,7 +94,7 @@ class ScannerDb:
         self.close()
 
     def connect(self):
-        self.db = sql.connect("../scanner.db")
+        self.db = sql.connect("scanner.db")
 
     def close(self):
         self.db.commit()

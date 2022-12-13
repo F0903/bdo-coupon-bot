@@ -1,4 +1,6 @@
 __pycache__
-discord_token.txt
+discord_token
 scanner.db
+
 env
+dist
