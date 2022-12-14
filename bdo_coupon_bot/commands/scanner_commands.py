@@ -1,3 +1,4 @@
+import datetime
 import sys
 import discord
 from discord import app_commands
@@ -101,7 +102,7 @@ class ChannelCommands(commands.Cog):
             )
 
     # TODO: Fix duplicate message on startup (and maybe all background checks?)
-    @tasks.loop(hours=24)
+    @tasks.loop(time=datetime.time(15, 0))
     async def run_check_for_new_coupons(self):
         embed = await self.check_for_new_coupons()
         if embed is None:

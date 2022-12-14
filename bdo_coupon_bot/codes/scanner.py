@@ -33,7 +33,9 @@ async def get_new_codes() -> list[CouponCode]:
 
     delta_codes = []
     with ScannerDb() as db:
-        existing_codes = db.coupons.get_all()
+        existing_codes = list(
+            db.coupons.get_all()
+        )  # Must be a list as an iterator would get exhausted on first pass.
         for new_code in combined_codes:
             exists = False
             for old_code in existing_codes:
@@ -44,5 +46,4 @@ async def get_new_codes() -> list[CouponCode]:
             if not exists:
                 db.coupons.add(new_code)
                 delta_codes.append(new_code)
-
     return delta_codes
