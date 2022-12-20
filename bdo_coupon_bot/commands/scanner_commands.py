@@ -5,6 +5,7 @@ from discord import app_commands
 from discord.ext import commands, tasks
 from ..db import ScannerDb, ChannelElement
 from ..codes import scanner as scan
+from ..__about__ import __version__
 
 
 class ChannelCommands(commands.Cog):
@@ -76,11 +77,14 @@ class ChannelCommands(commands.Cog):
             return None
         coupons_str = ""
         for coupon in coupons:
-            date_str = "- " + str(coupon.date) if coupon.date is not None else ""
+            date_str = "| " + str(coupon.date) if coupon.date is not None else ""
             coupons_str += f"**{coupon.code}** {date_str}\n"
         embed = discord.Embed(
-            color=discord.Colour(0x8C7B34), title="New Codes!", description=coupons_str
+            color=discord.Colour(0x8C7B34),
+            title="New Codes!",
+            description=coupons_str,
         )
+        embed.set_footer(text=f"ver. {__version__}")
         return embed
 
     # TODO: Restrict to whitelisted people.
