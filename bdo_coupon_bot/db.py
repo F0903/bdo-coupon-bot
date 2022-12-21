@@ -48,7 +48,7 @@ class ChannelsTable:
         self.cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS channels(
-                guildID BIGINT PRIMARY KEY UNIQUE,
+                guildID BIGINT PRIMARY KEY NOT NULL UNIQUE,
                 channelID BIGINT UNIQUE
             )
             """
