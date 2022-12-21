@@ -3,7 +3,8 @@ from typing import Tuple
 from bdo_coupon_scanner.scanners.site_scanner import OfficialSiteScanner
 from bdo_coupon_scanner.scanners.twitter_scanner import TwitterScanner
 from time import perf_counter
-from ..db import DatabaseTransaction, Coupon
+from ..db import DatabaseTransaction
+from ..db.coupons import Coupon
 
 
 def remove_duplicates_by_key(selector, items):

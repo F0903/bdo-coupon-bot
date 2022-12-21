@@ -5,7 +5,8 @@ import sys
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
-from ..db.transaction import DatabaseTransaction, ChannelElement
+from ..db import DatabaseTransaction
+from ..db.subscribers import Subscriber
 from ..codes import scanner as scan
 from ..__about__ import __version__
 
@@ -25,14 +26,17 @@ class ScannerCog(commands.Cog):
         self, message: str = "", *, embed: discord.Embed | None = None
     ):
         with DatabaseTransaction() as db:
-            channels = db.channels.get_all()
-            for elem in channels:
+            subs = db.subscribers.get_all()
+            for elem in subs:
                 try:
                     ch = await self.bot.fetch_channel(elem.channelID)
                     await ch.send(message, embed=embed)
-                except (PermissionError, discord.errors.Forbidden) as e:
+                except (PermissionError, discord.errors.Forbidden):
                     # TODO: Proper logging
-                    print(f"Error! {e}", file=sys.stderr)
+                    print(
+                        f"Permission error! [cID{elem.channelID} -> gID{elem.guildID}]",
+                        file=sys.stderr,
+                    )
                     db.channels.remove(elem.guildID)
 
     @app_commands.command(name="print_codes", description="Prints previous codes.")
@@ -66,7 +70,7 @@ class ScannerCog(commands.Cog):
         await interaction.response.defer()
         # TODO: check access to channel before adding
         with DatabaseTransaction() as db:
-            db.channels.add(ChannelElement(interaction.guild_id, channel.id))
+            db.channels.add(Subscriber(interaction.guild_id, channel.id))
         await interaction.followup.send(content=f"{channel.name} is now subscribed!")
 
     @app_commands.command(
