@@ -109,6 +109,11 @@ class ScannerCog(commands.Cog):
     ):
         await interaction.response.defer()
         try:
+            """TODO/NOTE
+            If bot ever goes public, this command should NOT update the database,
+            as this might hide new codes for other guilds
+            that would otherwise get them on the normal schedule
+            """
             embed = await self.check_for_new_coupons()
             if embed is None:
                 await interaction.edit_original_response(
