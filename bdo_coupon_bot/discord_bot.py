@@ -1,12 +1,12 @@
 import asyncio
 import discord
 from discord.ext import commands
-from .commands.scanner_commands import ChannelCommands
+from .cogs.scanner_cog import ScannerCog
 
 
 class DiscordBot(commands.Bot):
     async def setup_commands(self):
-        await self.add_cog(ChannelCommands(self))
+        await self.add_cog(ScannerCog(self))
         DEBUG_GUILD_ID = 153896159834800129
         self.tree.copy_global_to(guild=discord.Object(id=DEBUG_GUILD_ID))
         await self.tree.sync(guild=discord.Object(id=DEBUG_GUILD_ID))

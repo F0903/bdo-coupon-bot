@@ -1,3 +1,4 @@
+from io import BytesIO
 from pytz import timezone
 import datetime
 import sys
@@ -9,7 +10,7 @@ from ..codes import scanner as scan
 from ..__about__ import __version__
 
 
-class ChannelCommands(commands.Cog):
+class ScannerCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         super().__init__()
@@ -20,10 +21,35 @@ class ChannelCommands(commands.Cog):
     def cog_unload(self) -> None:
         self.run_check_for_new_coupons.cancel()
 
-    async def send_debug_msg(self, msg):
-        DEBUG_CHANNEL_ID = 153896159834800129
-        channel = await self.bot.fetch_channel(DEBUG_CHANNEL_ID)
-        await channel.send(msg)
+    async def send_message_to_subs(
+        self, message: str = "", *, embed: discord.Embed | None = None
+    ):
+        with ScannerDb() as db:
+            channels = db.channels.get_all()
+            for elem in channels:
+                try:
+                    ch = await self.bot.fetch_channel(elem.channelID)
+                    await ch.send(message, embed=embed)
+                except (PermissionError, discord.errors.Forbidden) as e:
+                    # TODO: Proper logging
+                    print(f"Error! {e}", file=sys.stderr)
+                    db.channels.remove(elem.guildID)
+
+    @app_commands.command(name="print_codes", description="Prints previous codes.")
+    async def print_codes(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        with ScannerDb() as db:
+            coupons = db.coupons.get_all()
+        coupons_str = ""
+        for coupon in coupons:
+            coupons_str += f"{coupon.code},{coupon.date},{coupon.origin_link}\n"
+        try:
+            buffer = BytesIO(bytes(coupons_str, "utf8"))
+            await interaction.followup.send(file=discord.File(buffer, "coupons.csv"))
+        except discord.errors.Forbidden:
+            await interaction.followup.send(
+                "Not permitted to send files in this channel."
+            )
 
     @app_commands.command(
         name="subscribe",
@@ -57,20 +83,6 @@ class ChannelCommands(commands.Cog):
         await interaction.followup.send(
             content=f"{interaction.guild.name} is now unsubscribed."
         )
-
-    async def send_message_to_subs(
-        self, message: str = "", *, embed: discord.Embed | None = None
-    ):
-        with ScannerDb() as db:
-            channels = db.channels.get_all()
-            for elem in channels:
-                try:
-                    ch = await self.bot.fetch_channel(elem.channelID)
-                    await ch.send(message, embed=embed)
-                except (PermissionError, discord.errors.Forbidden) as e:
-                    # TODO: Proper logging
-                    print(f"Error! {e}", file=sys.stderr)
-                    db.channels.remove(elem.guildID)
 
     async def check_for_new_coupons(self) -> discord.Embed | None:
         coupons, elapsed_s = await scan.get_new_codes()
