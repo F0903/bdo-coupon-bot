@@ -1,12 +1,6 @@
-from datetime import date
 import sqlite3 as sql
-from typing import Iterable, Optional
-
-
-class CouponCode:
-    def __init__(self, code: str, date: Optional[date]):
-        self.code = code
-        self.date = date
+from typing import Iterable
+from bdo_coupon_scanner.coupon_code import CouponCode
 
 
 class CouponCodesTable:
@@ -20,19 +14,20 @@ class CouponCodesTable:
             CREATE TABLE IF NOT EXISTS coupon_codes(
                 code VARCHAR(18) PRIMARY KEY UNIQUE,
                 date DATE
+                url TEXT
             )
             """
         )
 
     def add(self, coupon: CouponCode):
         self.cursor.execute(
-            "INSERT OR REPLACE INTO coupon_codes VALUES (?, ?)",
+            "INSERT OR REPLACE INTO coupon_codes VALUES (?, ?, ?)",
             [coupon.code, coupon.date],
         )
 
     def get_all(self) -> Iterable[CouponCode]:
         channels = map(
-            lambda x: CouponCode(x[0], x[1]),
+            lambda x: CouponCode(x[0], x[1], x[2]),
             self.cursor.execute("SELECT * from coupon_codes").fetchall(),
         )
         return channels

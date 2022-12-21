@@ -1,3 +1,4 @@
+from pytz import timezone
 import datetime
 import sys
 import discord
@@ -77,7 +78,7 @@ class ChannelCommands(commands.Cog):
             return None
         coupons_str = ""
         for coupon in coupons:
-            date_str = "| " + str(coupon.date) if coupon.date is not None else ""
+            date_str = f"| [{coupon.date}]({coupon.article_link})"
             coupons_str += f"**{coupon.code}** {date_str}\n"
         embed = discord.Embed(
             color=discord.Colour(0x8C7B34),
@@ -87,7 +88,7 @@ class ChannelCommands(commands.Cog):
         embed.set_footer(text=f"ver. {__version__}")
         return embed
 
-    # TODO: Restrict to whitelisted people.
+    @commands.has_guild_permissions(administrator=True)
     @app_commands.command(name="scan_now", description="Scan for coupons now.")
     async def scan_now(
         self,
@@ -105,8 +106,7 @@ class ChannelCommands(commands.Cog):
                 content="Successfully executed scan."
             )
 
-    # TODO: Fix duplicate message on startup (and maybe all background checks?)
-    @tasks.loop(time=datetime.time(15, 0))
+    @tasks.loop(time=datetime.time(15, 0, tzinfo=timezone("Europe/Copenhagen")))
     async def run_check_for_new_coupons(self):
         embed = await self.check_for_new_coupons()
         if embed is None:
