@@ -5,7 +5,7 @@ import sys
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
-from ..db import ScannerDb, ChannelElement
+from ..db.transaction import DatabaseTransaction, ChannelElement
 from ..codes import scanner as scan
 from ..__about__ import __version__
 
@@ -24,7 +24,7 @@ class ScannerCog(commands.Cog):
     async def send_message_to_subs(
         self, message: str = "", *, embed: discord.Embed | None = None
     ):
-        with ScannerDb() as db:
+        with DatabaseTransaction() as db:
             channels = db.channels.get_all()
             for elem in channels:
                 try:
@@ -38,7 +38,7 @@ class ScannerCog(commands.Cog):
     @app_commands.command(name="print_codes", description="Prints previous codes.")
     async def print_codes(self, interaction: discord.Interaction):
         await interaction.response.defer()
-        with ScannerDb() as db:
+        with DatabaseTransaction() as db:
             coupons = db.coupons.get_all()
         coupons_str = ""
         for coupon in coupons:
@@ -65,7 +65,7 @@ class ScannerCog(commands.Cog):
             return
         await interaction.response.defer()
         # TODO: check access to channel before adding
-        with ScannerDb() as db:
+        with DatabaseTransaction() as db:
             db.channels.add(ChannelElement(interaction.guild_id, channel.id))
         await interaction.followup.send(content=f"{channel.name} is now subscribed!")
 
@@ -78,7 +78,7 @@ class ScannerCog(commands.Cog):
         interaction: discord.Interaction,
     ):
         await interaction.response.defer()
-        with ScannerDb() as db:
+        with DatabaseTransaction() as db:
             db.channels.remove(interaction.guild.id)
         await interaction.followup.send(
             content=f"{interaction.guild.name} is now unsubscribed."

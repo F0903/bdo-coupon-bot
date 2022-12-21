@@ -1,9 +1,9 @@
 from itertools import chain
 from typing import Tuple
-from bdo_coupon_scanner.site_checker import OfficialSiteChecker
-from bdo_coupon_scanner.twitter_checker import TwitterChecker
+from bdo_coupon_scanner.scanners.site_scanner import OfficialSiteScanner
+from bdo_coupon_scanner.scanners.twitter_scanner import TwitterScanner
 from time import perf_counter
-from ..db import ScannerDb, CouponCode
+from ..db import DatabaseTransaction, Coupon
 
 
 def remove_duplicates_by_key(selector, items):
@@ -21,17 +21,17 @@ def remove_duplicates_by_key(selector, items):
         yield x
 
 
-async def get_new_codes() -> Tuple[list[CouponCode], float]:
+async def get_new_codes() -> Tuple[list[Coupon], float]:
     start_t = perf_counter()
 
-    site_codes = OfficialSiteChecker().get_codes()
-    twitter_codes = TwitterChecker().get_codes()
+    site_codes = OfficialSiteScanner().get_codes()
+    twitter_codes = TwitterScanner().get_codes()
 
     combined_codes = chain(site_codes, twitter_codes)
     codes = remove_duplicates_by_key(lambda x: x.code, combined_codes)
 
     delta_codes = []
-    with ScannerDb() as db:
+    with DatabaseTransaction() as db:
         existing_codes = list(
             db.coupons.get_all()
         )  # Must be a list as an iterator would get exhausted on first pass.
