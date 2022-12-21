@@ -12,8 +12,8 @@ class CouponCodesTable:
         self.cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS coupon_codes(
-                code VARCHAR(18) PRIMARY KEY UNIQUE,
-                date DATE
+                code VARCHAR(18) PRIMARY KEY NOT NULL UNIQUE,
+                date DATE,
                 url TEXT
             )
             """
@@ -22,7 +22,7 @@ class CouponCodesTable:
     def add(self, coupon: CouponCode):
         self.cursor.execute(
             "INSERT OR REPLACE INTO coupon_codes VALUES (?, ?, ?)",
-            [coupon.code, coupon.date],
+            [coupon.code, coupon.date, coupon.origin_link],
         )
 
     def get_all(self) -> Iterable[CouponCode]:
@@ -49,7 +49,7 @@ class ChannelsTable:
             """
             CREATE TABLE IF NOT EXISTS channels(
                 guildID BIGINT PRIMARY KEY NOT NULL UNIQUE,
-                channelID BIGINT UNIQUE
+                channelID BIGINT NOT NULL UNIQUE
             )
             """
         )

@@ -1,6 +1,8 @@
 from itertools import chain
+from typing import Tuple
 from bdo_coupon_scanner.site_checker import OfficialSiteChecker
 from bdo_coupon_scanner.twitter_checker import TwitterChecker
+from time import perf_counter
 from ..db import ScannerDb, CouponCode
 
 
@@ -19,24 +21,21 @@ def remove_duplicates_by_key(selector, items):
         yield x
 
 
-async def get_new_codes() -> list[CouponCode]:
-    site_codes = map(
-        lambda x: CouponCode(x.code, x.date), OfficialSiteChecker().get_codes()
-    )
-    twitter_codes = map(
-        lambda x: CouponCode(x, None),
-        TwitterChecker().get_codes(),
-    )
+async def get_new_codes() -> Tuple[list[CouponCode], float]:
+    start_t = perf_counter()
 
-    code_chain = chain(site_codes, twitter_codes)
-    combined_codes = remove_duplicates_by_key(lambda x: x.code, code_chain)
+    site_codes = OfficialSiteChecker().get_codes()
+    twitter_codes = TwitterChecker().get_codes()
+
+    combined_codes = chain(site_codes, twitter_codes)
+    codes = remove_duplicates_by_key(lambda x: x.code, combined_codes)
 
     delta_codes = []
     with ScannerDb() as db:
         existing_codes = list(
             db.coupons.get_all()
         )  # Must be a list as an iterator would get exhausted on first pass.
-        for new_code in combined_codes:
+        for new_code in codes:
             exists = False
             for old_code in existing_codes:
                 if new_code.code != old_code.code:
@@ -46,4 +45,6 @@ async def get_new_codes() -> list[CouponCode]:
             if not exists:
                 db.coupons.add(new_code)
                 delta_codes.append(new_code)
-    return delta_codes
+    end_t = perf_counter()
+    elapsed_s = round(end_t - start_t, 2)
+    return delta_codes, elapsed_s
