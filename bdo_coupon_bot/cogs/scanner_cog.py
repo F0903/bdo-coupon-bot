@@ -88,7 +88,9 @@ class ScannerCog(commands.Cog):
             content=f"{interaction.guild.name} is now unsubscribed."
         )
 
-    async def check_for_new_coupons(self) -> discord.Embed | None:
+    async def check_for_new_coupons(
+        self, save_to_db: bool = True
+    ) -> discord.Embed | None:
         coupons, elapsed_s = await scan.get_new_codes()
         if len(coupons) < 1:
             return None
@@ -113,12 +115,7 @@ class ScannerCog(commands.Cog):
     ):
         await interaction.response.defer()
         try:
-            """TODO/NOTE
-            If bot ever goes public, this command should NOT update the database,
-            as this might hide new codes for other guilds
-            that would otherwise get them on the normal schedule
-            """
-            embed = await self.check_for_new_coupons()
+            embed = await self.check_for_new_coupons(False)
             if embed is None:
                 await interaction.edit_original_response(
                     content="Found no new codes :("

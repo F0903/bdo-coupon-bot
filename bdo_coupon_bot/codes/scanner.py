@@ -22,7 +22,7 @@ def remove_duplicates_by_key(selector, items):
         yield x
 
 
-async def get_new_codes() -> Tuple[list[Coupon], float]:
+async def get_new_codes(save_to_db: bool) -> Tuple[list[Coupon], float]:
     start_t = perf_counter()
 
     site_codes = OfficialSiteScanner().get_codes()
@@ -44,7 +44,8 @@ async def get_new_codes() -> Tuple[list[Coupon], float]:
                 exists = True
                 break
             if not exists:
-                db.coupons.add(new_code)
+                if save_to_db:
+                    db.coupons.add(new_code)
                 delta_codes.append(new_code)
     end_t = perf_counter()
     elapsed_s = round(end_t - start_t, 2)
