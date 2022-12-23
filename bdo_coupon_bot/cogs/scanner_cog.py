@@ -4,15 +4,16 @@ import datetime
 import sys
 import discord
 from discord import app_commands
-from discord.ext import commands, tasks
+from discord.ext import tasks
+from discord.ext.commands import Bot, Cog
 from ..db import DatabaseTransaction
 from ..db.subscribers import Subscriber
 from ..codes import scanner as scan
 from .. import __about__ as app_info
 
 
-class ScannerCog(commands.Cog):
-    def __init__(self, bot: commands.Bot) -> None:
+class ScannerCog(Cog):
+    def __init__(self, bot: Bot) -> None:
         self.bot = bot
         super().__init__()
 
@@ -106,7 +107,7 @@ class ScannerCog(commands.Cog):
         embed.set_footer(text=f"{elapsed_s}s | ver. {app_info.__version__}")
         return embed
 
-    @commands.is_owner()
+    @app_commands.check(lambda x: x.user.id == x.client.application.owner.id)
     @app_commands.command(name="scan_now_broadcast", description="[PRIVATE]")
     async def scan_now_broadcast(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -125,7 +126,7 @@ class ScannerCog(commands.Cog):
             await interaction.edit_original_response(content=f"Error during scan: {e}")
 
     # TODO: Limit usage of this from non-bot-owners to few times a day.
-    @commands.has_guild_permissions(administrator=True)
+    @app_commands.check(lambda x: x.user.guild_permissions.administrator)
     @app_commands.command(name="scan_now", description="Scan for coupons now.")
     async def scan_now(
         self,
