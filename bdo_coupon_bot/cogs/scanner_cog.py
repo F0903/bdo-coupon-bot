@@ -8,7 +8,7 @@ from discord.ext import commands, tasks
 from ..db import DatabaseTransaction
 from ..db.subscribers import Subscriber
 from ..codes import scanner as scan
-from ..__about__ import __version__
+from .. import __about__ as app_info
 
 
 class ScannerCog(commands.Cog):
@@ -103,7 +103,7 @@ class ScannerCog(commands.Cog):
             title="New Codes!",
             description=coupons_str,
         )
-        embed.set_footer(text=f"{elapsed_s}s | ver. {__version__}")
+        embed.set_footer(text=f"{elapsed_s}s | ver. {app_info.__version__}")
         return embed
 
     # TODO: Limit usage of this from non-bot-owners to few times a day.
