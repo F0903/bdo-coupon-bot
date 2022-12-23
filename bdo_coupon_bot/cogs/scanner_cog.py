@@ -91,7 +91,7 @@ class ScannerCog(commands.Cog):
     async def check_for_new_coupons(
         self, save_to_db: bool = True
     ) -> discord.Embed | None:
-        coupons, elapsed_s = await scan.get_new_codes()
+        coupons, elapsed_s = await scan.get_new_codes(save_to_db)
         if len(coupons) < 1:
             return None
         coupons_str = ""
