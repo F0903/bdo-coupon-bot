@@ -37,7 +37,7 @@ class ScannerCog(commands.Cog):
                         f"Permission error! [cID{elem.channelID} -> gID{elem.guildID}]",
                         file=sys.stderr,
                     )
-                    db.channels.remove(elem.guildID)
+                    db.subscribers.remove(elem.guildID)
 
     @app_commands.command(name="print_codes", description="Prints previous codes.")
     async def print_codes(self, interaction: discord.Interaction):
@@ -70,7 +70,7 @@ class ScannerCog(commands.Cog):
         await interaction.response.defer()
         # TODO: check access to channel before adding
         with DatabaseTransaction() as db:
-            db.channels.add(Subscriber(interaction.guild_id, channel.id))
+            db.subscribers.add(Subscriber(interaction.guild_id, channel.id))
         await interaction.followup.send(content=f"{channel.name} is now subscribed!")
 
     @app_commands.command(
@@ -83,7 +83,7 @@ class ScannerCog(commands.Cog):
     ):
         await interaction.response.defer()
         with DatabaseTransaction() as db:
-            db.channels.remove(interaction.guild.id)
+            db.subscribers.remove(interaction.guild.id)
         await interaction.followup.send(
             content=f"{interaction.guild.name} is now unsubscribed."
         )
@@ -105,6 +105,24 @@ class ScannerCog(commands.Cog):
         )
         embed.set_footer(text=f"{elapsed_s}s | ver. {app_info.__version__}")
         return embed
+
+    @commands.is_owner()
+    @app_commands.command(name="scan_now_broadcast", description="[PRIVATE]")
+    async def scan_now_broadcast(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        try:
+            embed = await self.check_for_new_coupons(True)
+            if embed is None:
+                await interaction.edit_original_response(
+                    content="Found no new codes :("
+                )
+                return
+            await self.send_message_to_subs(embed=embed)
+            await interaction.edit_original_response(
+                content="Successfully broadcast new codes."
+            )
+        except Exception as e:
+            await interaction.edit_original_response(content=f"Error during scan: {e}")
 
     # TODO: Limit usage of this from non-bot-owners to few times a day.
     @commands.has_guild_permissions(administrator=True)
