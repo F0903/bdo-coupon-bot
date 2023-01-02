@@ -10,6 +10,7 @@ from ..db import DatabaseTransaction
 from ..db.subscribers import Subscriber
 from ..codes import scanner as scan
 from .. import __about__ as app_info
+from .utils import assert_correct_permissions
 
 
 class ScannerCog(Cog):
@@ -68,7 +69,13 @@ class ScannerCog(Cog):
             )
             return
         await interaction.response.defer()
-        # TODO: check access to channel before adding
+        bot_member = interaction.guild.get_member(interaction.client.user.id)
+        if not assert_correct_permissions(bot_member, channel):
+            await interaction.followup.send(
+                "Not permitted to send messages in this channel."
+            )
+            return
+
         with DatabaseTransaction() as db:
             db.subscribers.add(Subscriber(interaction.guild_id, channel.id))
         await interaction.followup.send(content=f"{channel.name} is now subscribed!")
