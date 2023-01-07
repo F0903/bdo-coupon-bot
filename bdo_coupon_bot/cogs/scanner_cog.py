@@ -160,6 +160,7 @@ class ScannerCog(Cog):
     async def run_check_for_new_coupons(self):
         embed = await self.check_for_new_coupons()
         if embed is None:
+            log.info("Successfully ran daily coupon check. No new codes.")
             return
         await self.send_message_to_subs(embed=embed)
-        log.info("Successfully ran daily coupon check.")
+        log.info("Successfully ran daily coupon check. Found new codes")
