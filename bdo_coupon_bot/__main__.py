@@ -5,7 +5,7 @@ import sys
 
 
 def setup_logging() -> log.Logger:
-    logger = log.getLogger()
+    logger = log.getLogger(f"{__name__}")
     logger.setLevel(log.INFO)
 
     stdout_handler = log.StreamHandler(sys.stderr)

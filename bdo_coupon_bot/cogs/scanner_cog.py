@@ -2,7 +2,7 @@ from io import BytesIO
 from pytz import timezone
 import datetime
 import discord
-import logging as log
+import logging
 from discord import app_commands
 from discord.ext import tasks
 from discord.ext.commands import Bot, Cog
@@ -27,6 +27,7 @@ class ScannerCog(Cog):
     async def send_message_to_subs(
         self, message: str = "", *, embed: discord.Embed | None = None
     ):
+        log = logging.getLogger(f"{__name__}.scanner-cog")
         with DatabaseTransaction() as db:
             subs = db.subscribers.get_all()
             for elem in subs:
@@ -69,6 +70,7 @@ class ScannerCog(Cog):
             )
             return
         await interaction.response.defer()
+        log = logging.getLogger(f"{__name__}.scanner-cog")
         bot_member = interaction.guild.get_member(interaction.client.user.id)
         if not assert_correct_permissions(bot_member, channel):
             await interaction.followup.send(
@@ -90,6 +92,7 @@ class ScannerCog(Cog):
         interaction: discord.Interaction,
     ):
         await interaction.response.defer()
+        log = logging.getLogger(f"{__name__}.scanner-cog")
         with DatabaseTransaction() as db:
             db.subscribers.remove(interaction.guild.id)
         await interaction.followup.send(
@@ -119,6 +122,7 @@ class ScannerCog(Cog):
     @app_commands.command(name="scan_now_broadcast", description="[PRIVATE]")
     async def scan_now_broadcast(self, interaction: discord.Interaction):
         await interaction.response.defer()
+        log = logging.getLogger(f"{__name__}.scanner-cog")
         try:
             embed = await self.check_for_new_coupons(True)
             if embed is None:
@@ -142,6 +146,7 @@ class ScannerCog(Cog):
         self,
         interaction: discord.Interaction,
     ):
+        log = logging.getLogger(f"{__name__}.scanner-cog")
         await interaction.response.defer()
         try:
             embed = await self.check_for_new_coupons(False)
@@ -158,6 +163,7 @@ class ScannerCog(Cog):
 
     @tasks.loop(time=datetime.time(15, 0, tzinfo=timezone("Europe/Copenhagen")))
     async def run_check_for_new_coupons(self):
+        log = logging.getLogger(f"{__name__}.scanner-cog")
         embed = await self.check_for_new_coupons()
         if embed is None:
             log.info("Successfully ran daily coupon check. No new codes.")

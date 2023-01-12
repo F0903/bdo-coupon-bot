@@ -1,4 +1,4 @@
-from itertools import chain
+import logging
 from typing import Tuple
 from bdo_coupon_scanner.scanners.site_scanner import OfficialSiteScanner
 from bdo_coupon_scanner.scanners.twitter_scanner import TwitterScanner
@@ -23,13 +23,22 @@ def remove_duplicates_by_key(selector, items):
 
 
 async def get_new_codes(save_to_db: bool) -> Tuple[list[Coupon], float]:
+    log = logging.getLogger(f"{__name__}.scanner")
     start_t = perf_counter()
 
-    site_codes = OfficialSiteScanner().get_codes()
-    twitter_codes = TwitterScanner().get_codes()
+    codes = []
+    try:
+        site_codes = OfficialSiteScanner().get_codes()
+        codes.extend(site_codes)
+    except Exception:
+        log.error("Could not get site codes!")
+    try:
+        twitter_codes = TwitterScanner().get_codes()
+        codes.extend(twitter_codes)
+    except Exception:
+        log.error("Could not get twitter codes!")
 
-    combined_codes = chain(site_codes, twitter_codes)
-    codes = remove_duplicates_by_key(lambda x: x.code, combined_codes)
+    codes = remove_duplicates_by_key(lambda x: x.code, codes)
 
     delta_codes = []
     with DatabaseTransaction() as db:
