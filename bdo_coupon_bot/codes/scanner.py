@@ -31,11 +31,15 @@ async def get_new_codes(save_to_db: bool) -> Tuple[list[Coupon], float]:
     try:
         site_codes = OfficialSiteScanner().get_codes()
         codes = chain(codes, site_codes)
+        log.debug(f"Site codes: {site_codes}")
     except Exception:
         log.error("Could not get site codes!")
+
     try:
+        log.debug(f"Code chain before 2 scan: {codes}")
         twitter_codes = TwitterScanner().get_codes()
         codes = chain(codes, twitter_codes)
+        log.debug(f"Twitter codes: {twitter_codes}")
     except Exception:
         log.error("Could not get twitter codes!")
 
