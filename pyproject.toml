@@ -1,26 +1,18 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[project]
+[tool.poetry]
 name = "bdo-coupon-bot"
 description = 'A Discord bot that searches for Black Desert coupons.'
 readme = "README.md"
-requires-python = ">=3.7"
 license = "MIT"
-keywords = []
-authors = [{ name = "Frederik P.", email = "frepbh@gmail.com" }]
-dynamic = ["version"]
+version = "0.1.10"
+authors = ["Frederik P. <frepbh@gmail.com>"]
+include = ["launch.sh", "poetry.lock", "discord_token"]
 
-[tool.hatch.version]
-path = "bdo_coupon_bot/__about__.py"
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
-[tool.hatch.build]
-include = ["bdo_coupon_bot/**/*.py", "launch.sh", "discord_token"]
-
-[tool.hatch.build.force-include]
-"./discord_token" = "discord_token"
-"./requirements.txt" = "requirements.txt"
-
-[tool.hatch.metadata]
-allow-direct-references = true
+[tool.poetry.dependencies]
+python = "^3.9"
+discord = "^2.3.2"
+pytz = "^2023.3.post1"
+bdo_coupon_scanner = { git = "https://github.com/F0903/bdo-coupon-scanner" }

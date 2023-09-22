@@ -9,8 +9,8 @@ from discord.ext.commands import Bot, Cog
 from ..db import DatabaseTransaction
 from ..db.subscribers import Subscriber
 from ..codes import scanner as scan
-from .. import __about__ as app_info
-from .utils import assert_correct_permissions
+from ..utils import assert_correct_permissions, BOT_VERSION
+
 
 
 class ScannerCog(Cog):
@@ -115,7 +115,7 @@ class ScannerCog(Cog):
             title="New Codes!",
             description=coupons_str,
         )
-        embed.set_footer(text=f"{elapsed_s}s | ver. {app_info.__version__}")
+        embed.set_footer(text=f"{elapsed_s}s | ver. {BOT_VERSION}")
         return embed
 
     @app_commands.check(lambda x: x.user.id == x.client.application.owner.id)
