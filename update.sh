@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-if [[ `git fetch --porcelain` ]]; then
+if [[ $(git fetch) ]]; then
     git reset --hard origin/master
     poetry install
 fi
