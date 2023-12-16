@@ -1,7 +1,11 @@
 import discord
 import importlib.metadata as metadata
+import datetime
+
+LOCAL_TIMEZONE = datetime.datetime.now().astimezone().tzinfo
 
 BOT_VERSION = metadata.version("bdo-coupon-bot")
+
 
 def assert_correct_permissions(
     user: discord.Member, channel: discord.abc.GuildChannel

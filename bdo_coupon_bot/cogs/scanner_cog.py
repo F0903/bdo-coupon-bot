@@ -1,5 +1,4 @@
 from io import BytesIO
-from pytz import timezone
 import datetime
 import discord
 import logging
@@ -9,8 +8,7 @@ from discord.ext.commands import Bot, Cog
 from ..db import DatabaseTransaction
 from ..db.subscribers import Subscriber
 from ..codes import scanner as scan
-from ..utils import assert_correct_permissions, BOT_VERSION
-
+from ..utils import assert_correct_permissions, BOT_VERSION, LOCAL_TIMEZONE
 
 
 class ScannerCog(Cog):
@@ -161,7 +159,13 @@ class ScannerCog(Cog):
             await interaction.edit_original_response(content=f"Error during scan: {e}")
             log.error(f"Error during coupon check:\n{e}")
 
-    @tasks.loop(time=datetime.time(15, 0, tzinfo=timezone("Europe/Copenhagen")))
+    @tasks.loop(
+        time=[
+            datetime.time(9, 0, tzinfo=LOCAL_TIMEZONE),
+            datetime.time(15, 0, tzinfo=LOCAL_TIMEZONE),
+            datetime.time(21, 0, tzinfo=LOCAL_TIMEZONE),
+        ]
+    )
     async def run_check_for_new_coupons(self):
         log = logging.getLogger(__name__)
         embed = await self.check_for_new_coupons()

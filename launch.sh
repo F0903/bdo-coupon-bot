@@ -1,6 +1,6 @@
 #!/bin/sh
 
-poetry install
+. update.sh
 
 if [ -f "python" ]
 then
