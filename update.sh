@@ -1,5 +1,7 @@
 #!/bin/bash
 
+git fetch
+
 if [[ $(git diff --name-only) ]]; then
     echo "Installing new changes."
     git reset --hard origin/master
