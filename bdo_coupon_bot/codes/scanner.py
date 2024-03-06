@@ -2,7 +2,7 @@ import logging
 from itertools import chain
 from typing import Tuple
 from bdo_coupon_scanner.scanners.site_scanner import OfficialSiteScanner
-from bdo_coupon_scanner.scanners.twitter_scanner import TwitterScanner
+from bdo_coupon_scanner.scanners.garmoth_scanner import GarmothScanner
 from time import perf_counter
 from ..db import DatabaseTransaction
 from ..db.coupons import Coupon
@@ -37,11 +37,11 @@ async def get_new_codes(save_to_db: bool) -> Tuple[list[Coupon], float]:
 
     try:
         log.debug(f"Code chain before 2 scan: {codes}")
-        twitter_codes = TwitterScanner().get_codes()
-        codes = chain(codes, twitter_codes)
-        log.debug(f"Twitter codes: {twitter_codes}")
+        garmoth_codes = GarmothScanner().get_codes()
+        codes = chain(codes, garmoth_codes)
+        log.debug(f"Twitter codes: {garmoth_codes}")
     except Exception:
-        log.error("Could not get twitter codes!")
+        log.error("Could not get garmoth codes!")
 
     codes = remove_duplicates_by_key(lambda x: x.code, codes)
 
