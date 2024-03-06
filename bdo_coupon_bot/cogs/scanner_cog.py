@@ -4,7 +4,8 @@ import discord
 import logging
 from discord import app_commands
 from discord.ext import tasks
-from discord.ext.commands import Bot, Cog
+from discord.ext.commands import Cog
+from ..debuggable_bot import DebuggableBot
 from ..db import DatabaseTransaction
 from ..db.subscribers import Subscriber
 from ..codes import scanner as scan
@@ -12,7 +13,7 @@ from ..utils import assert_correct_permissions, BOT_VERSION, LOCAL_TIMEZONE
 
 
 class ScannerCog(Cog):
-    def __init__(self, bot: Bot) -> None:
+    def __init__(self, bot: DebuggableBot) -> None:
         self.bot = bot
         super().__init__()
 
@@ -116,6 +117,13 @@ class ScannerCog(Cog):
         embed.set_footer(text=f"{elapsed_s}s | ver. {BOT_VERSION}")
         return embed
 
+    def create_error_embed(description: str) -> discord.Embed:
+        embed = discord.Embed(
+            title="Error!", description=description, timestamp=datetime.datetime.now()
+        )
+        embed.set_footer(text=f"ver. {BOT_VERSION}")
+        return
+
     @app_commands.check(lambda x: x.user.id == x.client.application.owner.id)
     @app_commands.command(name="scan_now_broadcast", description="[PRIVATE]")
     async def scan_now_broadcast(self, interaction: discord.Interaction):
@@ -134,7 +142,7 @@ class ScannerCog(Cog):
             )
             log.info("Successfully ran manual broadcast coupon check.")
         except Exception as e:
-            await interaction.edit_original_response(content=f"Error during scan: {e}")
+            await interaction.edit_original_response(embed=self.create_error_embed(e))
             log.error(f"Error during coupon check:\n{e}")
 
     # TODO: Limit usage of this from non-bot-owners to few times a day.
@@ -156,7 +164,7 @@ class ScannerCog(Cog):
             await interaction.edit_original_response(content="", embed=embed)
             log.info("Successfully ran manual coupon check.")
         except Exception as e:
-            await interaction.edit_original_response(content=f"Error during scan: {e}")
+            await interaction.edit_original_response(embed=self.create_error_embed(e))
             log.error(f"Error during coupon check:\n{e}")
 
     @tasks.loop(
@@ -167,10 +175,13 @@ class ScannerCog(Cog):
         ]
     )
     async def run_check_for_new_coupons(self):
-        log = logging.getLogger(__name__)
-        embed = await self.check_for_new_coupons()
-        if embed is None:
-            log.info("Successfully ran daily coupon check. No new codes.")
-            return
-        await self.send_message_to_subs(embed=embed)
-        log.info("Successfully ran daily coupon check. Found new codes")
+        try:
+            log = logging.getLogger(__name__)
+            embed = await self.check_for_new_coupons()
+            if embed is None:
+                log.info("Successfully ran daily coupon check. No new codes.")
+                return
+            await self.send_message_to_subs(embed=embed)
+            log.info("Successfully ran daily coupon check. Found new codes")
+        except Exception as e:
+            self.bot.debug_channel.send(None, embed=self.create_error_embed(e))

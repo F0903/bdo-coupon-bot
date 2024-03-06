@@ -2,14 +2,16 @@ import asyncio
 import discord
 from discord.ext import commands
 from .cogs.scanner_cog import ScannerCog
+from .debuggable_bot import DebuggableBot
 
 
-class ScannerBot(commands.Bot):
+class ScannerBot(DebuggableBot):
     async def setup_commands(self):
         await self.add_cog(ScannerCog(self))
         DEBUG_GUILD_ID = 153896159834800129
         self.tree.copy_global_to(guild=discord.Object(id=DEBUG_GUILD_ID))
         await self.tree.sync(guild=discord.Object(id=DEBUG_GUILD_ID))
+        await super().setup_commands()
 
     async def on_ready(self):
         await self.setup_commands()
