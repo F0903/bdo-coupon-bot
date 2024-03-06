@@ -142,7 +142,7 @@ tests-no-zope = ["attrs[tests-mypy]", "cloudpickle", "hypothesis", "pympler", "p
 
 [[package]]
 name = "bdo-coupon-scanner"
-version = "0.4.3"
+version = "0.4.4"
 description = "A library that scans for Black Desert Online coupon codes."
 optional = false
 python-versions = ">=3.9 <=3.12.*"
@@ -157,7 +157,7 @@ snscrape = "^0.7"
 type = "git"
 url = "https://github.com/F0903/bdo-coupon-scanner"
 reference = "HEAD"
-resolved_reference = "069a37fb4cc49c031f762df0fa0fa569395a1ade"
+resolved_reference = "ff091663f2c8c3365cfdcdc8f526c03702267dfe"
 
 [[package]]
 name = "beautifulsoup4"
