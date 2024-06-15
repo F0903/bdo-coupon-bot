@@ -15,5 +15,4 @@ If you want to run it as a Docker container, you will have to build the image yo
 
 1. Clone the repo
 2. Create a new filed called "discord_token", and paste your discord token here
-3. Build the image
-4. Run your container
+3. Run "docker compose up --detach"
