@@ -1,0 +1,5 @@
+services:
+  bdo-coupon-bot:
+    build: .
+    volumes:
+      - "./data:/data"
