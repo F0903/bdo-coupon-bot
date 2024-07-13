@@ -18,8 +18,9 @@ COPY README.md .
 RUN $POETRY_HOME/bin/poetry install
 
 # Install firefox
+# Firefox gets updated regularly so put at bottom
 RUN echo "deb http://deb.debian.org/debian/ unstable main contrib non-free" >> /etc/apt/sources.list.d/debian.list
 RUN apt-get update && apt-get install -y --no-install-recommends firefox
 
 ENV DOCKER_MODE 1
-CMD $POETRY_HOME/bin/poetry run python3 -m bdo_coupon_bot
+ENTRYPOINT command $POETRY_HOME/bin/poetry run python3 -m bdo_coupon_bot
