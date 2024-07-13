@@ -43,6 +43,7 @@ class ScannerCog(Cog):
     @app_commands.command(name="print_codes", description="Prints previous codes.")
     async def print_codes(self, interaction: discord.Interaction):
         await interaction.response.defer()
+        log = logging.getLogger(__name__)
         with DatabaseTransaction() as db:
             coupons = db.coupons.get_all()
         coupons_str = ""
@@ -51,7 +52,9 @@ class ScannerCog(Cog):
         try:
             buffer = BytesIO(bytes(coupons_str, "utf8"))
             await interaction.followup.send(file=discord.File(buffer, "coupons.csv"))
+            log.info("Successfully printed codes.")
         except discord.errors.Forbidden:
+            log.error("Could not print previous codes in forbidden channel.")
             await interaction.followup.send(
                 "Not permitted to send files in this channel."
             )
@@ -80,7 +83,7 @@ class ScannerCog(Cog):
         with DatabaseTransaction() as db:
             db.subscribers.add(Subscriber(interaction.guild_id, channel.id))
         await interaction.followup.send(content=f"{channel.name} is now subscribed!")
-        log.info(f"Subscribed {interaction.guild.name}({interaction.guild_id})")
+        log.info(f"Subscribed %s(%s)", interaction.guild.name, interaction.guild_id)
 
     @app_commands.command(
         name="unsubscribe",
@@ -97,7 +100,7 @@ class ScannerCog(Cog):
         await interaction.followup.send(
             content=f"{interaction.guild.name} is now unsubscribed."
         )
-        log.info(f"Unsubscribed {interaction.guild.name}({interaction.guild_id})")
+        log.info(f"Unsubscribed %s(%s)", interaction.guild.name, interaction.guild_id)
 
     async def check_for_new_coupons(
         self, save_to_db: bool = True
@@ -117,12 +120,12 @@ class ScannerCog(Cog):
         embed.set_footer(text=f"{elapsed_s}s | ver. {BOT_VERSION}")
         return embed
 
-    def create_error_embed(description: str) -> discord.Embed:
+    def create_error_embed(self, description: str) -> discord.Embed:
         embed = discord.Embed(
             title="Error!", description=description, timestamp=datetime.datetime.now()
         )
         embed.set_footer(text=f"ver. {BOT_VERSION}")
-        return
+        return embed
 
     @app_commands.check(lambda x: x.user.id == x.client.application.owner.id)
     @app_commands.command(name="scan_now_broadcast", description="[PRIVATE]")
@@ -143,7 +146,7 @@ class ScannerCog(Cog):
             log.info("Successfully ran manual broadcast coupon check.")
         except Exception as e:
             await interaction.edit_original_response(embed=self.create_error_embed(e))
-            log.error(f"Error during coupon check:\n{e}")
+            log.error(f"Error during coupon check:\n%s", e, exc_info=True)
 
     # TODO: Limit usage of this from non-bot-owners to few times a day.
     @app_commands.check(lambda x: x.user.guild_permissions.administrator)
@@ -165,12 +168,11 @@ class ScannerCog(Cog):
             log.info("Successfully ran manual coupon check.")
         except Exception as e:
             await interaction.edit_original_response(embed=self.create_error_embed(e))
-            log.error(f"Error during coupon check:\n{e}")
+            log.error(f"Error during coupon check:\n%s", e, exc_info=True)
 
     @tasks.loop(
         time=[
             datetime.time(9, 0, tzinfo=LOCAL_TIMEZONE),
-            datetime.time(15, 0, tzinfo=LOCAL_TIMEZONE),
             datetime.time(21, 0, tzinfo=LOCAL_TIMEZONE),
         ]
     )
@@ -179,9 +181,11 @@ class ScannerCog(Cog):
             log = logging.getLogger(__name__)
             embed = await self.check_for_new_coupons()
             if embed is None:
-                log.info("Successfully ran daily coupon check. No new codes.")
+                log.info("Successfully ran scheduled coupon check. No new codes.")
                 return
             await self.send_message_to_subs(embed=embed)
-            log.info("Successfully ran daily coupon check. Found new codes")
+            log.info("Successfully ran scheduled coupon check. Found new codes")
         except Exception as e:
-            self.bot.debug_channel.send(None, embed=self.create_error_embed(e))
+            log.error("Error in scheduled coupon check: %s", e, exc_info=True)
+            # await self.bot.debug_channel.send(None, embed=self.create_error_embed(e))
+            pass
