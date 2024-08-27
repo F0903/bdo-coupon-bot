@@ -6,10 +6,15 @@ from discord import app_commands
 from discord.ext import tasks
 from discord.ext.commands import Cog
 from ..debuggable_bot import DebuggableBot
-from ..db import DatabaseTransaction
-from ..db.subscribers import Subscriber
-from ..codes import scanner as scan
-from ..utils import assert_correct_permissions, BOT_VERSION, LOCAL_TIMEZONE
+from ..services.db import DatabaseTransaction
+from ..services.db.tables.subscribers import Subscriber
+from ..services.codes import scanner as scan
+from ..utils import (
+    assert_correct_permissions,
+    BOT_VERSION,
+    LOCAL_TIMEZONE,
+    SCANNER_VERSION,
+)
 
 
 class ScannerCog(Cog):
@@ -66,11 +71,6 @@ class ScannerCog(Cog):
     async def subscribe(
         self, interaction: discord.Interaction, channel: discord.abc.GuildChannel
     ):
-        if channel is None:
-            await interaction.response.send_message(
-                "You need to pass a channel as argument!", ephemeral=True
-            )
-            return
         await interaction.response.defer()
         log = logging.getLogger(__name__)
         bot_member = interaction.guild.get_member(interaction.client.user.id)
@@ -112,19 +112,28 @@ class ScannerCog(Cog):
         for coupon in coupons:
             date_str = f"| [{coupon.date}]({coupon.origin_link})"
             coupons_str += f"**{coupon.code}** {date_str}\n"
+        return self.create_success_embed(coupons_str)
+
+    def get_embed_version_string(self) -> str:
+        return f"ver. {BOT_VERSION}-{SCANNER_VERSION}"
+
+    def create_success_embed(self, description: str, elapsed_s: float) -> discord.Embed:
         embed = discord.Embed(
-            color=discord.Colour(0x8C7B34),
+            color=discord.Color(0x8C7B34),
             title="New Codes!",
-            description=coupons_str,
+            description=description,
         )
-        embed.set_footer(text=f"{elapsed_s}s | ver. {BOT_VERSION}")
+        embed.set_footer(text=f"{elapsed_s}s | {self.get_embed_version_string()}")
         return embed
 
     def create_error_embed(self, description: str) -> discord.Embed:
         embed = discord.Embed(
-            title="Error!", description=description, timestamp=datetime.datetime.now()
+            color=discord.Color(0xB03535),
+            title="Error!",
+            description=description,
+            timestamp=datetime.datetime.now(),
         )
-        embed.set_footer(text=f"ver. {BOT_VERSION}")
+        embed.set_footer(text=self.get_embed_version_string())
         return embed
 
     @app_commands.check(lambda x: x.user.id == x.client.application.owner.id)

@@ -1,7 +1,7 @@
 import sqlite3 as sql
 import os
-from .subscribers import SubscribersTable
-from .coupons import CouponTable
+from .tables.subscribers import SubscribersTable
+from .tables.coupons import CouponTable
 
 DATA_DIR = "/data" if os.environ.get("DOCKER_MODE") == "1" else "./data"
 
@@ -18,7 +18,6 @@ class DatabaseTransaction:
         self.close()
 
     def connect(self):
-
         self.db = sql.connect(f"{DATA_DIR}/data.db")
 
     def close(self):

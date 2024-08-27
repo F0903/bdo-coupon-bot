@@ -28,6 +28,9 @@ class CouponTable:
     def get_all(self) -> Iterable[Coupon]:
         coupons = map(
             lambda x: Coupon(x[0], x[1], x[2]),
-            self.cursor.execute("SELECT * from coupons").fetchall(),
+            self.cursor.execute("SELECT * FROM coupons").fetchall(),
         )
         return coupons
+
+    def count(self) -> int:
+        return self.cursor.execute("SELECT COUNT(*) FROM subscribers").fetchone()

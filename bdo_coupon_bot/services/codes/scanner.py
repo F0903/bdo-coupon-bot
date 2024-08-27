@@ -5,7 +5,11 @@ from bdo_coupon_scanner.scanners.site_scanner import OfficialSiteScanner
 from bdo_coupon_scanner.scanners.garmoth_scanner import GarmothScanner
 from time import perf_counter
 from ..db import DatabaseTransaction
-from ..db.coupons import Coupon
+from ..db.tables.coupons import Coupon
+
+
+class ScannerException(Exception):
+    pass
 
 
 def remove_duplicates_by_key(selector, items):
@@ -47,6 +51,9 @@ async def get_new_codes(save_to_db: bool) -> Tuple[list[Coupon], float]:
 
     delta_codes = []
     with DatabaseTransaction() as db:
+        if db.subscribers.count() < 1:
+            log.error("No channels are subscribed!")
+            raise ScannerException("Cannot send codes. No channels are subscribed!")
         existing_codes = list(
             db.coupons.get_all()
         )  # Must be a list as an iterator would get exhausted on first pass.

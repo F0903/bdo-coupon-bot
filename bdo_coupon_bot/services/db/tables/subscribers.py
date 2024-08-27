@@ -41,6 +41,10 @@ class SubscribersTable:
     def get_all(self) -> Iterable[Subscriber]:
         subs = map(
             lambda x: Subscriber(x[0], x[1]),
-            self.cursor.execute("SELECT * from subscribers").fetchall(),
+            self.cursor.execute("SELECT * FROM subscribers").fetchall(),
         )
         return subs
+
+    def count(self) -> int:
+        res = self.cursor.execute("SELECT COUNT(*) FROM subscribers").fetchone()[0]
+        return res
