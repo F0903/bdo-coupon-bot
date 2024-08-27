@@ -3,7 +3,7 @@ name = "bdo-coupon-bot"
 description = 'A Discord bot that searches for Black Desert coupons.'
 readme = "README.md"
 license = "MIT"
-version = "0.2.6"
+version = "0.2.7"
 authors = ["Frederik P. <frepbh@gmail.com>"]
 include = ["launch.sh", "poetry.lock", "discord_token"]
 

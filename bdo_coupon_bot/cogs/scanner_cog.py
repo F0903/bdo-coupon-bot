@@ -81,6 +81,12 @@ class ScannerCog(Cog):
             return
 
         with DatabaseTransaction() as db:
+            res = db.subscribers.get(interaction.guild_id)
+            if res is not None and res == channel.id:
+                await interaction.followup.send(
+                    content=f"{channel.name} is already subscribed."
+                )
+                return
             db.subscribers.add(Subscriber(interaction.guild_id, channel.id))
         await interaction.followup.send(content=f"{channel.name} is now subscribed!")
         log.info(f"Subscribed %s(%s)", interaction.guild.name, interaction.guild_id)
@@ -96,10 +102,13 @@ class ScannerCog(Cog):
         await interaction.response.defer()
         log = logging.getLogger(__name__)
         with DatabaseTransaction() as db:
-            db.subscribers.remove(interaction.guild.id)
-        await interaction.followup.send(
-            content=f"{interaction.guild.name} is now unsubscribed."
-        )
+            if db.subscribers.get(interaction.guild_id) is None:
+                await interaction.followup.send(
+                    content="Guild is already unsubscribed."
+                )
+                return
+            db.subscribers.remove(interaction.guild_id)
+        await interaction.followup.send(content="Guild is now unsubscribed.")
         log.info(f"Unsubscribed %s(%s)", interaction.guild.name, interaction.guild_id)
 
     async def check_for_new_coupons(

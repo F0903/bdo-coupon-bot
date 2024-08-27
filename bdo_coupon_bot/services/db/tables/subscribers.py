@@ -32,11 +32,11 @@ class SubscribersTable:
     def remove(self, guildID: int):
         self.cursor.execute("DELETE FROM subscribers WHERE guildID=?", [guildID])
 
-    def get(self, guildID: int) -> int:
+    def get(self, guildID: int) -> int | None:
         sub = self.cursor.execute(
             "SELECT channelID FROM subscribers WHERE guildID=?", [guildID]
-        ).fetchone()[0]
-        return sub
+        ).fetchone()
+        return sub[0] if sub is not None else None
 
     def get_all(self) -> Iterable[Subscriber]:
         subs = map(
