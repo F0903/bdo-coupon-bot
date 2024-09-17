@@ -121,7 +121,7 @@ class ScannerCog(Cog):
         for coupon in coupons:
             date_str = f"| [{coupon.date}]({coupon.origin_link})"
             coupons_str += f"**{coupon.code}** {date_str}\n"
-        return self.create_success_embed(coupons_str)
+        return self.create_success_embed(coupons_str, elapsed_s)
 
     def get_embed_version_string(self) -> str:
         return f"ver. {BOT_VERSION}-{SCANNER_VERSION}"
