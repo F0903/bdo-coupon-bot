@@ -216,7 +216,7 @@ files = [
 
 [[package]]
 name = "bdo-coupon-scanner"
-version = "0.4.9"
+version = "0.5.0"
 description = "A library that scans for Black Desert Online coupon codes."
 optional = false
 python-versions = ">=3.9 <4.0"
@@ -225,14 +225,14 @@ files = []
 develop = false
 
 [package.dependencies]
-selenium = "^4.18"
-snscrape = "^0.7"
+selenium = "^4.34"
+snscrape = "^0.7.0.2"
 
 [package.source]
 type = "git"
 url = "https://github.com/F0903/bdo-coupon-scanner"
 reference = "HEAD"
-resolved_reference = "6b4a445809dfc6a056d5cadae4a177a772790957"
+resolved_reference = "b27c86f12b4622d84d9dfaa34b43a0d14a4dc31f"
 
 [[package]]
 name = "beautifulsoup4"
@@ -1372,4 +1372,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9 <4.0"
-content-hash = "ebc908d7da0e3a20e9984fe3d3bfbc66b43f58e9e92aeb31508d172f648452d4"
+content-hash = "70ad087ac9e1ed9057be6b29d3d45ae9c8b0adaa3a534ab5e53771a241542541"
