@@ -35,7 +35,7 @@ async def get_new_codes(save_to_db: bool) -> Tuple[list[Coupon], float]:
 
     codes = []
     try:
-        site_codes = OfficialSiteScanner().get_codes()
+        site_codes = await OfficialSiteScanner().get_codes()
         codes = chain(codes, site_codes)
         log.debug(f"Site codes: {site_codes}")
     except Exception:
@@ -43,7 +43,7 @@ async def get_new_codes(save_to_db: bool) -> Tuple[list[Coupon], float]:
 
     try:
         log.debug(f"Code chain before 2. scan: {codes}")
-        garmoth_codes = GarmothScanner().get_codes()
+        garmoth_codes = await GarmothScanner().get_codes()
         codes = chain(codes, garmoth_codes)
         log.debug(f"Garmoth codes: {garmoth_codes}")
     except Exception:

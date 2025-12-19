@@ -5,7 +5,7 @@ readme = "README.md"
 license = "MIT"
 version = "1.0.0"
 authors = ["Frederik P. <frepbh@gmail.com>"]
-include = ["launch.sh", "poetry.lock", "discord_token"]
+include = ["launch.sh", "pyproject.toml", "poetry.lock", "discord_token"]
 
 [build-system]
 requires = ["poetry-core"]

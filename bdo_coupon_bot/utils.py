@@ -1,13 +1,22 @@
 import datetime
-import importlib.metadata as metadata
+from pathlib import Path
 
 import discord
+import tomllib
 
 DEBUG_GUILD_ID = 153896159834800129
 
 LOCAL_TIMEZONE = datetime.datetime.now().astimezone().tzinfo
 
-BOT_VERSION = metadata.version("bdo-coupon-bot")
+
+def _get_version():
+    pyproject_path = Path(__file__).parents[1] / "pyproject.toml"
+    with open(pyproject_path, "rb") as f:
+        data = tomllib.load(f)
+        return data["tool"]["poetry"]["version"]
+
+
+BOT_VERSION = _get_version()
 
 
 def assert_correct_permissions(

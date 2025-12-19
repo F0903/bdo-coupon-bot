@@ -33,7 +33,7 @@ class ScannerCog(Cog):
         self.run_check_for_new_coupons.cancel()
 
     async def send_message_to_subs(
-        self, message: str = "", *, embed: discord.Embed | None = None
+        self, message: str = "", *, embeds: list[discord.Embed] | None = None
     ):
         log = logging.getLogger(__name__)
 
@@ -45,8 +45,11 @@ class ScannerCog(Cog):
                     ch = await self.bot.fetch_channel(elem.channelID)
                     # Only TextChannel and Thread support send()
                     if isinstance(ch, (discord.TextChannel, discord.Thread)):
-                        if embed is not None:
-                            await ch.send(content=message, embed=embed)
+                        if embeds is not None:
+                            for i in range(0, len(embeds), 10):
+                                chunk = embeds[i : i + 10]
+                                msg = message if i == 0 else ""
+                                await ch.send(content=msg, embeds=chunk)
                         else:
                             await ch.send(content=message)
                     else:
@@ -169,26 +172,26 @@ class ScannerCog(Cog):
 
     async def check_for_new_coupons(
         self, save_to_db: bool = True
-    ) -> discord.Embed | None:
+    ) -> list[discord.Embed] | None:
         coupons, elapsed_s = await scan.get_new_codes(save_to_db)
         if len(coupons) < 1:
             return None
 
-        coupons_str = ""
+        embeds = []
         for coupon in coupons:
-            date_str = f"| [{coupon.date}]({coupon.origin_link})"
-            coupons_str += f"**{coupon.code}** {date_str}\n"
+            embed = self.create_coupon_embed(f"**{coupon.code}** | [{coupon.date}]({coupon.origin_link})", elapsed_s)
+            embeds.append(embed)
 
-        return self.create_success_embed(coupons_str, elapsed_s)
+        return embeds
 
     def get_embed_version_string(self) -> str:
         return f"ver. {BOT_VERSION}"
 
-    def create_success_embed(self, description: str, elapsed_s: float) -> discord.Embed:
+    def create_coupon_embed(self, code: str, elapsed_s: float) -> discord.Embed:
         embed = discord.Embed(
             color=discord.Color(0x8C7B34),
-            title="New Codes!",
-            description=description,
+            title="New Coupon!",
+            description=code,
         )
         embed.set_footer(text=f"{elapsed_s}s | {self.get_embed_version_string()}")
         return embed
@@ -211,14 +214,14 @@ class ScannerCog(Cog):
         log = logging.getLogger(__name__)
 
         try:
-            embed = await self.check_for_new_coupons(True)
-            if embed is None:
+            embeds = await self.check_for_new_coupons(True)
+            if embeds is None:
                 await interaction.edit_original_response(
                     content="Found no new codes :("
                 )
                 return
 
-            await self.send_message_to_subs(embed=embed)
+            await self.send_message_to_subs(embeds=embeds)
             await interaction.edit_original_response(
                 content="Successfully broadcast new codes."
             )
@@ -239,14 +242,20 @@ class ScannerCog(Cog):
         log = logging.getLogger(__name__)
 
         try:
-            embed = await self.check_for_new_coupons(False)
-            if embed is None:
+            embeds = await self.check_for_new_coupons(False)
+            if embeds is None:
                 await interaction.edit_original_response(
                     content="Found no new codes :("
                 )
                 return
 
-            await interaction.edit_original_response(content="", embed=embed)
+            for i in range(0, len(embeds), 10):
+                chunk = embeds[i : i + 10]
+                if i == 0:
+                    await interaction.edit_original_response(content="", embeds=chunk)
+                else:
+                    await interaction.followup.send(embeds=chunk)
+
             log.info("Successfully ran manual coupon check.")
         except Exception as e:
             await interaction.edit_original_response(embed=self.create_error_embed(e))
@@ -262,11 +271,11 @@ class ScannerCog(Cog):
         log = logging.getLogger(__name__)
 
         try:
-            embed = await self.check_for_new_coupons()
-            if embed is None:
+            embeds = await self.check_for_new_coupons()
+            if embeds is None:
                 log.info("Successfully ran scheduled coupon check. No new codes.")
                 return
-            await self.send_message_to_subs(embed=embed)
+            await self.send_message_to_subs(embeds=embeds)
             log.info("Successfully ran scheduled coupon check. Found new codes")
         except Exception as e:
             log.error("Error in scheduled coupon check: %s", e, exc_info=True)

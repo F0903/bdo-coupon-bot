@@ -267,6 +267,7 @@ files = []
 develop = false
 
 [package.dependencies]
+aiohttp = "^3.13.2"
 python-dateutil = "^2.9.0.post0"
 selenium = "^4.36"
 snscrape = "^0.7.0.2"
@@ -275,7 +276,7 @@ snscrape = "^0.7.0.2"
 type = "git"
 url = "https://github.com/F0903/bdo-coupon-scanner"
 reference = "HEAD"
-resolved_reference = "130d6aa2d9188b08649e53758d29f14b136539b8"
+resolved_reference = "e80934ba09c5887502a73f109296ea1582c443aa"
 
 [[package]]
 name = "beautifulsoup4"
