@@ -1,6 +1,7 @@
-from typing import Iterable
-from bdo_coupon_scanner.coupon import Coupon
 import sqlite3 as sql
+from typing import Iterable
+
+from bdo_coupon_scanner.coupon import Coupon
 
 
 class CouponTable:

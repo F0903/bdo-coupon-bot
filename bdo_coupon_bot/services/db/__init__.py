@@ -1,5 +1,6 @@
 import os
-from .transaction import DatabaseTransaction, DATA_DIR
+
+from .transaction import DATA_DIR, DatabaseTransaction
 
 __all__ = ["DatabaseTransaction"]
 

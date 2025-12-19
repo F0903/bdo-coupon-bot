@@ -1,6 +1,7 @@
 import asyncio
+
 import discord
-from discord.ext import commands
+
 from .cogs.scanner_cog import ScannerCog
 from .debuggable_bot import DebuggableBot
 from .utils import DEBUG_GUILD_ID

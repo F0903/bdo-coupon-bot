@@ -1,7 +1,8 @@
-from pathlib import Path
-from .scanner_bot import BotManager
 import logging
 import sys
+from pathlib import Path
+
+from .scanner_bot import BotManager
 
 
 def setup_logging():

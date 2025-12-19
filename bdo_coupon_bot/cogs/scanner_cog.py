@@ -1,22 +1,22 @@
-from io import BytesIO
 import datetime
-from types import CoroutineType
-from typing import Any
-import discord
 import logging
+from io import BytesIO
+from typing import Any
+
+import discord
 from discord import app_commands
 from discord.ext import tasks
 from discord.ext.commands import Cog
+
 from ..debuggable_bot import DebuggableBot
+from ..services.codes import scanner as scan
 from ..services.db import DatabaseTransaction
 from ..services.db.tables.subscribers import Subscriber
-from ..services.codes import scanner as scan
 from ..utils import (
-    assert_admin,
-    assert_correct_permissions,
     BOT_VERSION,
     LOCAL_TIMEZONE,
-    SCANNER_VERSION,
+    assert_admin,
+    assert_correct_permissions,
     assert_owner,
 )
 
@@ -136,7 +136,7 @@ class ScannerCog(Cog):
                 return
             db.subscribers.add(Subscriber(guild.id, channel.id))
         await interaction.followup.send(content=f"{channel.name} is now subscribed!")
-        log.info(f"Subscribed %s(%s)", guild.name, guild.id)
+        log.info("Subscribed %s(%s)", guild.name, guild.id)
 
     @app_commands.command(
         name="unsubscribe",
@@ -165,7 +165,7 @@ class ScannerCog(Cog):
             db.subscribers.remove(guild.id)
 
         await interaction.followup.send(content="Guild is now unsubscribed.")
-        log.info(f"Unsubscribed %s(%s)", guild.name, guild.id)
+        log.info("Unsubscribed %s(%s)", guild.name, guild.id)
 
     async def check_for_new_coupons(
         self, save_to_db: bool = True
@@ -182,7 +182,7 @@ class ScannerCog(Cog):
         return self.create_success_embed(coupons_str, elapsed_s)
 
     def get_embed_version_string(self) -> str:
-        return f"ver. {BOT_VERSION}-{SCANNER_VERSION}"
+        return f"ver. {BOT_VERSION}"
 
     def create_success_embed(self, description: str, elapsed_s: float) -> discord.Embed:
         embed = discord.Embed(
@@ -225,7 +225,7 @@ class ScannerCog(Cog):
             log.info("Successfully ran manual broadcast coupon check.")
         except Exception as e:
             await interaction.edit_original_response(embed=self.create_error_embed(e))
-            log.error(f"Error during coupon check:\n%s", e, exc_info=True)
+            log.error("Error during coupon check:\n%s", e, exc_info=True)
 
     # TODO: Limit usage of this from non-bot-owners to few times a day.
     @app_commands.check(assert_admin)
@@ -250,7 +250,7 @@ class ScannerCog(Cog):
             log.info("Successfully ran manual coupon check.")
         except Exception as e:
             await interaction.edit_original_response(embed=self.create_error_embed(e))
-            log.error(f"Error during coupon check:\n%s", e, exc_info=True)
+            log.error("Error during coupon check:\n%s", e, exc_info=True)
 
     @tasks.loop(
         time=[

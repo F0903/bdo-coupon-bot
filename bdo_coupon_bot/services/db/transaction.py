@@ -1,7 +1,8 @@
-import sqlite3 as sql
 import os
-from .tables.subscribers import SubscribersTable
+import sqlite3 as sql
+
 from .tables.coupons import CouponTable
+from .tables.subscribers import SubscribersTable
 
 DATA_DIR = "/data" if os.environ.get("DOCKER_MODE") == "1" else "./data"
 

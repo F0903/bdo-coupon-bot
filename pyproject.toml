@@ -3,7 +3,7 @@ name = "bdo-coupon-bot"
 description = 'A Discord bot that searches for Black Desert coupons.'
 readme = "README.md"
 license = "MIT"
-version = "0.3.1"
+version = "1.0.0"
 authors = ["Frederik P. <frepbh@gmail.com>"]
 include = ["launch.sh", "poetry.lock", "discord_token"]
 
@@ -12,7 +12,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-python = ">=3.9 <4.0"
-aiohttp = "^3.12.14"
-discord = "^2.3.2"
+python = ">=3.10 <4.0"
+aiohttp = "^3.13.2"
+discord-py = "^2.6.4"
 bdo-coupon-scanner = { git = "https://github.com/F0903/bdo-coupon-scanner" }
